@@ -2,29 +2,13 @@
 
 import * as BaseSoapClient from 'dbc-node-basesoap-client';
 
-let wsdl = null;
-let defaults = {};
-let Logger = null;
-
-/**
- * Retrieves data from the webservice based on the parameters given
- *
- * @param {Object} params Parameters for the request
- * @return {Promise}
- */
-
-function sendSearchRequest(params) {
-  let opensearch = BaseSoapClient.client(wsdl, defaults, Logger);
-  return opensearch.request('search', params, null, true);
-}
-
 /**
  * Constructs the object of parameters for search result request.
  *
  * @param {Object} value Object with parameters for getting a search result
  * @return {Promise}
  */
-export function getSearchResult(values) {
+function getSearchResult(client, values) {
   const params = {
     query: values.query,
     stepValue: values.stepValue,
@@ -33,7 +17,8 @@ export function getSearchResult(values) {
     objectFormat: 'briefDisplay',
     facets: values.facets || {}
   };
-  return sendSearchRequest(params);
+
+  return client.request('search', params, null, true);
 }
 
 /**
@@ -42,7 +27,7 @@ export function getSearchResult(values) {
  * @param {Object} value Object with parameters for getting a work
  * @return {Promise}
  */
-export function getWorkResult(values) {
+function getWorkResult(client, values) {
   const params = {
     query: values.query,
     start: 1,
@@ -51,13 +36,9 @@ export function getWorkResult(values) {
     objectFormat: ['dkabm', 'briefDisplay'],
     relationData: 'full'
   };
-  return sendSearchRequest(params);
-}
 
-export const METHODS = {
-  getSearchResult: getSearchResult,
-  getWorkResult: getWorkResult
-};
+  return client.request('search', params, null, true);
+}
 
 /**
  * Setting the necessary paramerters for the client to be usable.
@@ -67,18 +48,36 @@ export const METHODS = {
  * @param {Object} config Config object with the necessary parameters to use
  * the webservice
  */
-export function init(config) {
-  if (!wsdl) {
-    wsdl = config.wsdl;
+export default function OpenSearch (config) {
+
+  if (typeof config !== 'object') {
+    throw new Error('A config object should be provided');
   }
-  defaults = {
+
+  if (!config.wsdl) {
+    throw new Error('A wsdl should be provided with the given config object');
+  }
+
+  if (!config.agency) {
+    throw new Error('An agency should be provided with the given config object');
+  }
+
+  if (!config.profile) {
+    throw new Error('An profile should be provided with the given config object');
+  }
+
+
+  const defaults = {
     agency: config.agency,
     profile: config.profile
   };
 
-  if (config.logger && !Logger) {
-    Logger = config.logger;
-  }
+  const logger = config.logger || null;
 
-  return METHODS;
+  const opensearchClient = BaseSoapClient.client(config.wsdl, defaults, logger);
+
+  return {
+    getSearchResult: getSearchResult.bind(null, opensearchClient),
+    getWorkResult: getWorkResult.bind(null, opensearchClient)
+  };
 }

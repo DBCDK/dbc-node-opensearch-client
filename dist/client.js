@@ -3,9 +3,7 @@
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
-exports.getSearchResult = getSearchResult;
-exports.getWorkResult = getWorkResult;
-exports.init = init;
+exports['default'] = OpenSearch;
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -13,30 +11,13 @@ var _dbcNodeBasesoapClient = require('dbc-node-basesoap-client');
 
 var BaseSoapClient = _interopRequireWildcard(_dbcNodeBasesoapClient);
 
-var wsdl = null;
-var defaults = {};
-var Logger = null;
-
-/**
- * Retrieves data from the webservice based on the parameters given
- *
- * @param {Object} params Parameters for the request
- * @return {Promise}
- */
-
-function sendSearchRequest(params) {
-  var opensearch = BaseSoapClient.client(wsdl, defaults, Logger);
-  return opensearch.request('search', params, null, true);
-}
-
 /**
  * Constructs the object of parameters for search result request.
  *
  * @param {Object} value Object with parameters for getting a search result
  * @return {Promise}
  */
-
-function getSearchResult(values) {
+function getSearchResult(client, values) {
   var params = {
     query: values.query,
     stepValue: values.stepValue,
@@ -45,7 +26,8 @@ function getSearchResult(values) {
     objectFormat: 'briefDisplay',
     facets: values.facets || {}
   };
-  return sendSearchRequest(params);
+
+  return client.request('search', params, null, true);
 }
 
 /**
@@ -54,8 +36,7 @@ function getSearchResult(values) {
  * @param {Object} value Object with parameters for getting a work
  * @return {Promise}
  */
-
-function getWorkResult(values) {
+function getWorkResult(client, values) {
   var params = {
     query: values.query,
     start: 1,
@@ -64,15 +45,10 @@ function getWorkResult(values) {
     objectFormat: ['dkabm', 'briefDisplay'],
     relationData: 'full'
   };
-  return sendSearchRequest(params);
+
+  return client.request('search', params, null, true);
 }
 
-var METHODS = {
-  getSearchResult: getSearchResult,
-  getWorkResult: getWorkResult
-};
-
-exports.METHODS = METHODS;
 /**
  * Setting the necessary paramerters for the client to be usable.
  * The wsdl is only set if wsdl is null to allow setting it through
@@ -82,18 +58,37 @@ exports.METHODS = METHODS;
  * the webservice
  */
 
-function init(config) {
-  if (!wsdl) {
-    wsdl = config.wsdl;
+function OpenSearch(config) {
+
+  if (typeof config !== 'object') {
+    throw new Error('A config object should be provided');
   }
-  defaults = {
+
+  if (!config.wsdl) {
+    throw new Error('A wsdl should be provided with the given config object');
+  }
+
+  if (!config.agency) {
+    throw new Error('An agency should be provided with the given config object');
+  }
+
+  if (!config.profile) {
+    throw new Error('An profile should be provided with the given config object');
+  }
+
+  var defaults = {
     agency: config.agency,
     profile: config.profile
   };
 
-  if (config.logger && !Logger) {
-    Logger = config.logger;
-  }
+  var logger = config.logger || null;
 
-  return METHODS;
+  var opensearchClient = BaseSoapClient.client(config.wsdl, defaults, logger);
+
+  return {
+    getSearchResult: getSearchResult.bind(null, opensearchClient),
+    getWorkResult: getWorkResult.bind(null, opensearchClient)
+  };
 }
+
+module.exports = exports['default'];

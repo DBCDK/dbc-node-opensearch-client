@@ -1,6 +1,6 @@
 {
   "name": "dbc-node-opensearch-client",
-  "version": "1.2.3",
+  "version": "2.0.0",
   "description": "Client for DBC webservice OpenSearch",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,6 @@
   "devDependencies": {
     "babel": "^5.8.20",
     "babel-eslint": "^4.0.5",
-    "cache-manager": "^0.18.0",
     "chai": "^3.2.0",
     "eslint": "^1.0.0",
     "mocha": "^2.2.5",

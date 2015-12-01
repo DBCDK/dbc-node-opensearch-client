@@ -1,7 +1,7 @@
 'use strict';
 
 import {assert} from 'chai';
-import * as OpenSearch from '../client.js';
+import OpenSearch from '../client.js';
 
 describe('Test Open Search List Display', () => {
   it('Assert list display', function(done) {
@@ -13,8 +13,8 @@ describe('Test Open Search List Display', () => {
       profile: 'opac'
     };
 
-    OpenSearch.init(config);
-    let result = OpenSearch.getSearchResult({
+    const openSearch = OpenSearch(config);
+    let result = openSearch.getSearchResult({
       query: '"harry potter"',
       start: '1',
       stepValue: '10',
@@ -26,7 +26,7 @@ describe('Test Open Search List Display', () => {
       assert.equal(searchResult.result.sortUsed, 'rank_main_title', 'sort used is rank_main_title');
       assert.equal(searchResult.result.more, 'true', 'there is more');
       done();
-    });
+    }).catch(err => done(err));
   });
 });
 
@@ -40,8 +40,8 @@ describe('Test Open Search Work Display', () => {
       profile: 'opac'
     };
 
-    OpenSearch.init(config);
-    let result = OpenSearch.getWorkResult({
+    const openSearch = OpenSearch(config);
+    let result = openSearch.getWorkResult({
       query: 'rec.id=870970-basis:25245784',
       sort: 'date_descending'
     });
@@ -51,6 +51,6 @@ describe('Test Open Search Work Display', () => {
       assert.equal(searchResult.result.more, 'false', 'there is not more');
       assert.isAbove(searchResult.result.searchResult.collection.numberOfObjects, 3, 'work contains more than 3 manifestations');
       done();
-    });
+    }).catch(err => done(err));
   });
 });
