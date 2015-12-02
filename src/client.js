@@ -8,6 +8,23 @@ import * as BaseSoapClient from 'dbc-node-basesoap-client';
  * @param {Object} value Object with parameters for getting a search result
  * @return {Promise}
  */
+function getFacetResult(client, values) {
+  const params = {
+    query: values.query,
+    stepValue: 0,
+    start: 1,
+    facets: values.facets
+  };
+
+  return client.request('search', params, null, true);
+}
+
+/**
+ * Constructs the object of parameters for search result request.
+ *
+ * @param {Object} value Object with parameters for getting a search result
+ * @return {Promise}
+ */
 function getSearchResult(client, values) {
   const params = {
     query: values.query,
@@ -77,6 +94,7 @@ export default function OpenSearch (config) {
   const opensearchClient = BaseSoapClient.client(config.wsdl, defaults, logger);
 
   return {
+    getFacetResult: getFacetResult.bind(null, opensearchClient),
     getSearchResult: getSearchResult.bind(null, opensearchClient),
     getWorkResult: getWorkResult.bind(null, opensearchClient)
   };
