@@ -45,16 +45,21 @@ function getSearchResult(client, values) {
  * @return {Promise}
  */
 function getWorkResult(client, values) {
+  let opts = {};
+  if (values.agency) {
+    opts.agency = values.agency;
+  }
+
   const params = {
     query: values.query,
     start: 1,
     stepValue: 1,
     allObjects: true,
-    objectFormat: ['dkabm', 'briefDisplay'],
-    relationData: 'full'
+    objectFormat: values.objectFormats || ['dkabm', 'briefDisplay'],
+    relationData: values.getRelationData ||'full'
   };
 
-  return client.request('search', params, null, true);
+  return client.request('search', params, opts, true);
 }
 
 /**
