@@ -56,7 +56,7 @@ function getWorkResult(client, values) {
     stepValue: 1,
     allObjects: true,
     objectFormat: values.objectFormats || ['dkabm', 'briefDisplay'],
-    relationData: values.getRelationData ||'full'
+    relationData: values.getRelationData || 'full'
   };
 
   return client.request('search', params, opts, true);
